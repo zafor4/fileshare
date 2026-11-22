@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 import { useAuth } from "@/lib/auth";
 
-export function SiteHeader() {
+function SiteHeaderNav() {
   const { user, loading, logout } = useAuth();
   const pathname = usePathname();
 
@@ -59,5 +60,21 @@ export function SiteHeader() {
         </div>
       </div>
     </header>
+  );
+}
+
+export function SiteHeader() {
+  return (
+    <Suspense
+      fallback={
+        <header className="site-header">
+          <div className="shell py-3.5">
+            <span className="brand text-2xl text-ink">FileShare</span>
+          </div>
+        </header>
+      }
+    >
+      <SiteHeaderNav />
+    </Suspense>
   );
 }
