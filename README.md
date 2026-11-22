@@ -59,6 +59,10 @@ App: http://localhost:3000
 
 Change `JWT_SECRET` and `ENCRYPTION_KEY` before any real use.
 
+## Production (files.zaforiq.me)
+
+Docker images and Compose: `docker-compose.prod.yml`. Step-by-step VPS setup: [deploy/vps.md](deploy/vps.md).
+
 ## Share URLs
 
 - Folder: `/share/folder/<token>`
