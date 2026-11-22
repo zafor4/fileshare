@@ -9,11 +9,12 @@ WORKDIR /app
 
 COPY package*.json ./
 COPY prisma ./prisma/
-RUN npm config set fetch-retry-maxtimeout 120000 && npm config set fetch-retries 5 && npm ci
+RUN npm config set fetch-retry-maxtimeout 120000 && npm config set fetch-retries 5 \
+  && npm ci --no-audit --no-fund
 RUN npx prisma generate
 
 COPY . .
-RUN npm run build
+RUN npm run build && npm prune --production
 
 FROM node:20-bookworm-slim AS runner
 
@@ -24,18 +25,14 @@ RUN apt-get update -y && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-COPY package*.json ./
-COPY prisma ./prisma/
-RUN npm config set fetch-retry-maxtimeout 120000 && npm config set fetch-retries 5 \
-  && npm ci --omit=dev \
-  && npm install prisma@^5.22.0 --no-save
-RUN npx prisma generate
-
-COPY --from=builder /app/dist ./dist
-
 ENV NODE_ENV=production
 ENV PORT=4000
 ENV UPLOAD_DIR=/data/uploads
+
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
 
 RUN mkdir -p /data/uploads
 
