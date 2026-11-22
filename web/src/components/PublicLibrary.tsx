@@ -189,7 +189,7 @@ export function PublicLibrary() {
                 className="btn btn-primary"
                 href={`/share/item/${item.shareToken}`}
               >
-                {item.type === "FILE" ? "View / download" : "Open"}
+                {item.type === "FILE" ? "View" : "Open"}
               </Link>
             ) : null}
           </article>

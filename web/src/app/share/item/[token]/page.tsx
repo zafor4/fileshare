@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { FilePreview } from "@/components/FilePreview";
 import { SiteHeader } from "@/components/SiteHeader";
 import { api } from "@/lib/api";
 import type { Item } from "@/lib/types";
@@ -67,14 +68,29 @@ function SharedItemContent() {
           ) : null}
 
           {item.type === "FILE" ? (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <p className="text-muted">{item.fileName}</p>
-              <a
-                className="btn btn-primary inline-flex"
-                href={api.share.downloadUrl(params.token)}
-              >
-                Download file
-              </a>
+              <FilePreview
+                src={api.share.viewUrl(params.token)}
+                mimeType={item.mimeType}
+                fileName={item.fileName}
+              />
+              <div className="flex flex-wrap gap-2">
+                <a
+                  className="btn btn-primary inline-flex"
+                  href={api.share.viewUrl(params.token)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open in new tab
+                </a>
+                <a
+                  className="btn btn-ghost inline-flex"
+                  href={api.share.downloadUrl(params.token)}
+                >
+                  Download
+                </a>
+              </div>
             </div>
           ) : null}
 

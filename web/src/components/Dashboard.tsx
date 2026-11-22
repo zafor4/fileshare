@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { API_URL, api, authHeaders } from "@/lib/api";
+import { FilePreview } from "@/components/FilePreview";
+import { api } from "@/lib/api";
 import type { Folder, Item, Visibility } from "@/lib/types";
 
 type Modal =
@@ -11,7 +12,8 @@ type Modal =
   | { kind: "link" }
   | { kind: "credential" }
   | { kind: "file" }
-  | { kind: "secret"; item: Item };
+  | { kind: "secret"; item: Item }
+  | { kind: "preview"; item: Item; url: string };
 
 export function Dashboard() {
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -88,17 +90,28 @@ export function Dashboard() {
   }
 
   async function downloadFile(id: string, name: string) {
-    const res = await fetch(`${API_URL}/items/${id}/download`, {
-      headers: authHeaders(),
-    });
-    if (!res.ok) throw new Error("Download failed");
-    const blob = await res.blob();
+    const blob = await api.items.fetchBlob(id, "download");
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = name;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  async function previewFile(item: Item) {
+    try {
+      const blob = await api.items.fetchBlob(item.id, "view");
+      const url = URL.createObjectURL(blob);
+      setModal({ kind: "preview", item, url });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Preview failed");
+    }
+  }
+
+  function closeModal() {
+    if (modal?.kind === "preview") URL.revokeObjectURL(modal.url);
+    setModal(null);
   }
 
   return (
@@ -325,15 +338,24 @@ export function Dashboard() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {item.type === "FILE" ? (
-                      <button
-                        className="btn btn-ghost text-sm"
-                        onClick={() =>
-                          downloadFile(item.id, item.fileName || item.title)
-                        }
-                        type="button"
-                      >
-                        Download
-                      </button>
+                      <>
+                        <button
+                          className="btn btn-primary text-sm"
+                          onClick={() => previewFile(item)}
+                          type="button"
+                        >
+                          View
+                        </button>
+                        <button
+                          className="btn btn-ghost text-sm"
+                          onClick={() =>
+                            downloadFile(item.id, item.fileName || item.title)
+                          }
+                          type="button"
+                        >
+                          Download
+                        </button>
+                      </>
                     ) : null}
                     {item.type === "CREDENTIAL" ? (
                       <button
@@ -378,11 +400,14 @@ export function Dashboard() {
       </div>
 
       {modal ? (
-        <ModalShell onClose={() => setModal(null)}>
+        <ModalShell
+          onClose={closeModal}
+          wide={modal.kind === "preview"}
+        >
           {modal.kind === "folder" ? (
             <FolderForm
               busy={busy}
-              onCancel={() => setModal(null)}
+              onCancel={closeModal}
               onSubmit={async (name, visibility) => {
                 setBusy(true);
                 try {
@@ -391,7 +416,7 @@ export function Dashboard() {
                     parentId: currentFolderId ?? undefined,
                     visibility,
                   });
-                  setModal(null);
+                  closeModal();
                   await refresh();
                 } catch (e) {
                   setError(e instanceof Error ? e.message : "Failed");
@@ -404,7 +429,7 @@ export function Dashboard() {
           {modal.kind === "link" ? (
             <LinkForm
               busy={busy}
-              onCancel={() => setModal(null)}
+              onCancel={closeModal}
               onSubmit={async (data) => {
                 setBusy(true);
                 try {
@@ -412,7 +437,7 @@ export function Dashboard() {
                     ...data,
                     folderId: currentFolderId ?? undefined,
                   });
-                  setModal(null);
+                  closeModal();
                   await refresh();
                 } catch (e) {
                   setError(e instanceof Error ? e.message : "Failed");
@@ -425,7 +450,7 @@ export function Dashboard() {
           {modal.kind === "credential" ? (
             <CredentialForm
               busy={busy}
-              onCancel={() => setModal(null)}
+              onCancel={closeModal}
               onSubmit={async (data) => {
                 setBusy(true);
                 try {
@@ -433,7 +458,7 @@ export function Dashboard() {
                     ...data,
                     folderId: currentFolderId ?? undefined,
                   });
-                  setModal(null);
+                  closeModal();
                   await refresh();
                 } catch (e) {
                   setError(e instanceof Error ? e.message : "Failed");
@@ -446,13 +471,13 @@ export function Dashboard() {
           {modal.kind === "file" ? (
             <FileForm
               busy={busy}
-              onCancel={() => setModal(null)}
+              onCancel={closeModal}
               onSubmit={async (form) => {
                 setBusy(true);
                 try {
                   if (currentFolderId) form.set("folderId", currentFolderId);
                   await api.items.createFile(form);
-                  setModal(null);
+                  closeModal();
                   await refresh();
                 } catch (e) {
                   setError(e instanceof Error ? e.message : "Failed");
@@ -463,7 +488,34 @@ export function Dashboard() {
             />
           ) : null}
           {modal.kind === "secret" ? (
-            <RevealSecret itemId={modal.item.id} onClose={() => setModal(null)} />
+            <RevealSecret itemId={modal.item.id} onClose={closeModal} />
+          ) : null}
+          {modal.kind === "preview" ? (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h3 className="brand text-2xl">{modal.item.title}</h3>
+                  <p className="text-sm text-muted">{modal.item.fileName}</p>
+                </div>
+                <button
+                  className="btn btn-ghost text-sm"
+                  type="button"
+                  onClick={() =>
+                    downloadFile(
+                      modal.item.id,
+                      modal.item.fileName || modal.item.title,
+                    )
+                  }
+                >
+                  Download
+                </button>
+              </div>
+              <FilePreview
+                src={modal.url}
+                mimeType={modal.item.mimeType}
+                fileName={modal.item.fileName}
+              />
+            </div>
           ) : null}
         </ModalShell>
       ) : null}
@@ -516,13 +568,15 @@ function FolderTree({
 function ModalShell({
   children,
   onClose,
+  wide = false,
 }: {
   children: React.ReactNode;
   onClose: () => void;
+  wide?: boolean;
 }) {
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-[#14201c]/45 p-4">
-      <div className="panel w-full max-w-md p-5">
+      <div className={`panel w-full p-5 ${wide ? "max-w-4xl" : "max-w-md"}`}>
         <div className="mb-3 flex justify-end">
           <button className="btn btn-ghost px-3 py-1.5" onClick={onClose} type="button">
             Close
