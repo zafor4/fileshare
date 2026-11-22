@@ -1,6 +1,9 @@
-FROM node:20-alpine AS builder
+FROM node:20-bookworm-slim AS builder
 
-RUN apk add --no-cache openssl libc6-compat
+RUN apt-get update -y && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -12,9 +15,12 @@ RUN npx prisma generate
 COPY . .
 RUN npm run build
 
-FROM node:20-alpine AS runner
+FROM node:20-bookworm-slim AS runner
 
-RUN apk add --no-cache openssl libc6-compat
+RUN apt-get update -y && apt-get install -y --no-install-recommends \
+    openssl \
+    ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
