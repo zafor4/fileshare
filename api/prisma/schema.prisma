@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  folders      Folder[]
+  items        Item[]
+}
+
+enum Visibility {
+  PRIVATE
+  PUBLIC
+}
+
+enum ItemType {
+  FILE
+  LINK
+  CREDENTIAL
+}
+
+model Folder {
+  id         String     @id @default(cuid())
+  name       String
+  visibility Visibility @default(PRIVATE)
+  shareToken String?    @unique
+  parentId   String?
+  parent     Folder?    @relation("FolderTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children   Folder[]   @relation("FolderTree")
+  ownerId    String
+  owner      User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  items      Item[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@index([ownerId, parentId])
+}
+
+model Item {
+  id           String     @id @default(cuid())
+  type         ItemType
+  title        String
+  visibility   Visibility @default(PRIVATE)
+  shareToken   String?    @unique
+  folderId     String?
+  folder       Folder?    @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  ownerId      String
+  owner        User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // LINK
+  url          String?
+
+  // FILE
+  fileName     String?
+  filePath     String?
+  mimeType     String?
+  fileSize     Int?
+
+  // CREDENTIAL (encrypted at rest)
+  username     String?
+  secretEnc    String?
+  notes        String?
+
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([ownerId, folderId])
+  @@index([type])
+}
