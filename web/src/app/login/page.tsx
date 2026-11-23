@@ -36,17 +36,13 @@ function LoginForm() {
 
   return (
     <main className="shell flex min-h-[70vh] flex-col justify-center py-10">
-      <div className="mx-auto w-full max-w-md fade-up">
-        <div className="mb-6">
-          <span className="badge badge-private">Private vault</span>
-          <h1 className="brand mt-3 text-4xl">Sign in</h1>
-          <p className="mt-2 text-muted">
-            Needed only for private content and vault management. Public items
-            stay open without an account.
-          </p>
-        </div>
+      <div className="mx-auto w-full max-w-md">
+        <h1 className="page-title mb-1">Sign in</h1>
+        <p className="mb-6 text-sm text-muted">
+          Access your private vault. Public items don&apos;t require an account.
+        </p>
 
-        <form onSubmit={onSubmit} className="panel space-y-4 p-6">
+        <form onSubmit={onSubmit} className="panel space-y-4 p-5 md:p-6">
           <div>
             <label className="label" htmlFor="email">
               Email
@@ -77,18 +73,14 @@ function LoginForm() {
           </div>
           {error ? <p className="text-sm text-danger">{error}</p> : null}
           <button className="btn btn-primary w-full" disabled={busy} type="submit">
-            {busy ? "Signing in…" : "Sign in to vault"}
+            {busy ? "Signing in…" : "Sign in"}
           </button>
         </form>
 
         <p className="mt-5 text-center text-sm text-muted">
           No account?{" "}
-          <Link className="font-bold text-accent" href="/register">
-            Create one
-          </Link>
-          {" · "}
-          <Link className="font-bold text-accent" href="/">
-            Browse public library
+          <Link className="font-semibold text-accent" href="/register">
+            Register
           </Link>
         </p>
       </div>

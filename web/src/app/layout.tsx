@@ -1,29 +1,23 @@
 import type { Metadata } from "next";
-import { Fraunces, Manrope } from "next/font/google";
+import { Inter } from "next/font/google";
 import { AuthProvider } from "@/lib/auth";
 import "./globals.css";
 
-const display = Fraunces({
-  variable: "--font-display",
-  subsets: ["latin"],
-});
-
-const body = Manrope({
-  variable: "--font-body",
+const inter = Inter({
+  variable: "--font-sans",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "FileShare",
-  description:
-    "Public library and private vault for files, links, and credentials",
+  title: "FileShare — Public library & private vault",
+  description: "Store files, links, and credentials. Share what you want publicly.",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable} h-full`}>
+    <html lang="en" className={`${inter.variable} h-full`}>
       <body className="min-h-full antialiased">
         <AuthProvider>{children}</AuthProvider>
       </body>

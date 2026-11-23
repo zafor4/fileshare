@@ -37,17 +37,14 @@ export default function RegisterPage() {
     <div className="min-h-screen">
       <SiteHeader />
       <main className="shell flex min-h-[70vh] flex-col justify-center py-10">
-        <div className="mx-auto w-full max-w-md fade-up">
-          <div className="mb-6">
-            <span className="badge badge-private">Private vault</span>
-            <h1 className="brand mt-3 text-4xl">Create vault</h1>
-            <p className="mt-2 text-muted">
-              Your private space for files, links, and credentials. Publish
-              anything later if you want it open without login.
-            </p>
-          </div>
+        <div className="mx-auto w-full max-w-md">
+          <h1 className="page-title mb-1">Create account</h1>
+          <p className="mb-6 text-sm text-muted">
+            Your vault for files, links, and credentials. You can make items
+            public anytime.
+          </p>
 
-          <form onSubmit={onSubmit} className="panel space-y-4 p-6">
+          <form onSubmit={onSubmit} className="panel space-y-4 p-5 md:p-6">
             <div>
               <label className="label" htmlFor="name">
                 Name
@@ -92,18 +89,14 @@ export default function RegisterPage() {
             </div>
             {error ? <p className="text-sm text-danger">{error}</p> : null}
             <button className="btn btn-primary w-full" disabled={busy} type="submit">
-              {busy ? "Creating…" : "Create vault"}
+              {busy ? "Creating…" : "Create account"}
             </button>
           </form>
 
           <p className="mt-5 text-center text-sm text-muted">
             Already have an account?{" "}
-            <Link className="font-bold text-accent" href="/login?next=/vault">
+            <Link className="font-semibold text-accent" href="/login?next=/vault">
               Sign in
-            </Link>
-            {" · "}
-            <Link className="font-bold text-accent" href="/">
-              Browse public
             </Link>
           </p>
         </div>

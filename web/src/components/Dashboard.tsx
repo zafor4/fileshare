@@ -115,51 +115,46 @@ export function Dashboard() {
   }
 
   return (
-    <main className="shell fade-up flex flex-col gap-5 py-6 md:py-8">
-      <section className="panel p-5 md:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <div className="mb-2 flex flex-wrap gap-2">
-              <span className="badge badge-private">Private vault</span>
-              <span className="badge badge-type">Sign-in required</span>
-            </div>
-            <h1 className="brand text-3xl md:text-4xl">My vault</h1>
-            <p className="mt-2 max-w-2xl text-muted">
-              Manage folders, files, links, and credentials here. Default access
-              is private. Flip an item to public to list it in the{" "}
-              <Link href="/" className="font-bold text-accent underline-offset-2 hover:underline">
-                public library
-              </Link>
-              .
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button className="btn btn-ghost" onClick={() => setModal({ kind: "file" })} type="button">
-              Upload file
-            </button>
-            <button className="btn btn-ghost" onClick={() => setModal({ kind: "link" })} type="button">
-              Add link
-            </button>
-            <button className="btn btn-primary" onClick={() => setModal({ kind: "credential" })} type="button">
-              Add credential
-            </button>
-          </div>
+    <main className="shell flex flex-col gap-4 py-5 md:py-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="page-title">Vault</h1>
+        <div className="flex flex-wrap gap-2">
+          <button
+            className="btn btn-ghost btn-sm"
+            onClick={() => setModal({ kind: "folder" })}
+            type="button"
+          >
+            New folder
+          </button>
+          <button
+            className="btn btn-ghost btn-sm"
+            onClick={() => setModal({ kind: "file" })}
+            type="button"
+          >
+            Upload
+          </button>
+          <button
+            className="btn btn-ghost btn-sm"
+            onClick={() => setModal({ kind: "link" })}
+            type="button"
+          >
+            Link
+          </button>
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={() => setModal({ kind: "credential" })}
+            type="button"
+          >
+            Credential
+          </button>
         </div>
-      </section>
+      </div>
 
-      {error ? (
-        <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-danger">
-          {error}
-        </p>
-      ) : null}
-      {copied ? (
-        <p className="rounded-2xl border border-teal-200 bg-accent-soft px-4 py-3 text-sm text-accent">
-          {copied}
-        </p>
-      ) : null}
+      {error ? <p className="alert-error">{error}</p> : null}
+      {copied ? <p className="alert-success">{copied}</p> : null}
 
-      <div className="grid gap-5 lg:grid-cols-[280px_1fr]">
-        <aside className="panel p-4">
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[220px_1fr] lg:gap-5">
+        <aside className="panel order-2 p-3 lg:order-1">
           <div className="mb-3 flex items-center justify-between gap-2">
             <h2 className="text-xs font-extrabold uppercase tracking-[0.14em] text-muted">
               Folders
@@ -191,7 +186,7 @@ export function Dashboard() {
           />
         </aside>
 
-        <section className="panel p-5">
+        <section className="panel order-1 p-4 md:p-5 lg:order-2">
           <div className="mb-4">
             <div className="flex flex-wrap items-center gap-1 text-sm text-muted">
               <button className="hover:text-ink" onClick={() => setCurrentFolderId(null)} type="button">
@@ -207,13 +202,15 @@ export function Dashboard() {
               ))}
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-2">
-              <h2 className="brand text-2xl">{currentFolder?.name ?? "Root items"}</h2>
+              <h2 className="text-xl font-semibold">
+                {currentFolder?.name ?? "Root"}
+              </h2>
               {currentFolder ? (
                 <span
-                  className={`badge ${
+                  className={`chip ${
                     currentFolder.visibility === "PUBLIC"
-                      ? "badge-public"
-                      : "badge-private"
+                      ? "chip-public"
+                      : "chip-private"
                   }`}
                 >
                   {currentFolder.visibility === "PUBLIC" ? "Public" : "Private"}
@@ -266,8 +263,8 @@ export function Dashboard() {
                   <div className="font-bold">{f.name}</div>
                   <div className="mt-1">
                     <span
-                      className={`badge ${
-                        f.visibility === "PUBLIC" ? "badge-public" : "badge-private"
+                      className={`chip ${
+                        f.visibility === "PUBLIC" ? "chip-public" : "chip-private"
                       }`}
                     >
                       {f.visibility === "PUBLIC" ? "Public" : "Private"}
@@ -288,12 +285,12 @@ export function Dashboard() {
                 <article key={item.id} className="item-row">
                   <div>
                     <div className="mb-2 flex flex-wrap gap-2">
-                      <span className="badge badge-type">{item.type}</span>
+                      <span className="chip chip-neutral">{item.type}</span>
                       <span
-                        className={`badge ${
+                        className={`chip ${
                           item.visibility === "PUBLIC"
-                            ? "badge-public"
-                            : "badge-private"
+                            ? "chip-public"
+                            : "chip-private"
                         }`}
                       >
                         {item.visibility === "PUBLIC" ? "Public" : "Private"}
@@ -324,19 +321,10 @@ export function Dashboard() {
                       </p>
                     ) : null}
                     {item.notes ? (
-                      <p className="mt-2 text-sm text-stone-600">{item.notes}</p>
+                      <p className="mt-2 text-sm text-muted">{item.notes}</p>
                     ) : null}
-                    {item.visibility === "PUBLIC" ? (
-                      <p className="mt-2 text-xs text-accent">
-                        Visible in public library without login
-                      </p>
-                    ) : (
-                      <p className="mt-2 text-xs text-muted">
-                        Only visible after sign-in
-                      </p>
-                    )}
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {item.type === "FILE" ? (
                       <>
                         <button
@@ -494,7 +482,7 @@ export function Dashboard() {
             <div className="space-y-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h3 className="brand text-2xl">{modal.item.title}</h3>
+                  <h3 className="text-lg font-semibold">{modal.item.title}</h3>
                   <p className="text-sm text-muted">{modal.item.fileName}</p>
                 </div>
                 <button
@@ -607,7 +595,7 @@ function FolderForm({
 
   return (
     <form className="space-y-3" onSubmit={submit}>
-      <h3 className="brand text-2xl">New folder</h3>
+      <h3 className="text-lg font-semibold">New folder</h3>
       <div>
         <label className="label">Name</label>
         <input className="field" required value={name} onChange={(e) => setName(e.target.value)} />
@@ -644,7 +632,7 @@ function LinkForm({
 
   return (
     <form className="space-y-3" onSubmit={submit}>
-      <h3 className="brand text-2xl">Add link</h3>
+      <h3 className="text-lg font-semibold">Add link</h3>
       <div>
         <label className="label">Title</label>
         <input className="field" required value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -704,7 +692,7 @@ function CredentialForm({
 
   return (
     <form className="space-y-3" onSubmit={submit}>
-      <h3 className="brand text-2xl">Add credential</h3>
+      <h3 className="text-lg font-semibold">Add credential</h3>
       <div>
         <label className="label">Title</label>
         <input className="field" required value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -763,7 +751,7 @@ function FileForm({
 
   return (
     <form className="space-y-3" onSubmit={submit}>
-      <h3 className="brand text-2xl">Upload file</h3>
+      <h3 className="text-lg font-semibold">Upload file</h3>
       <div>
         <label className="label">File</label>
         <input
@@ -806,7 +794,7 @@ function RevealSecret({
 
   return (
     <div className="space-y-3">
-      <h3 className="brand text-2xl">Credential secret</h3>
+      <h3 className="text-lg font-semibold">Credential secret</h3>
       {error ? <p className="text-sm text-danger">{error}</p> : null}
       {secret === null ? (
         <p className="text-sm text-muted">Decrypting…</p>
