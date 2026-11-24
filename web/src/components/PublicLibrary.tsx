@@ -69,51 +69,39 @@ export function PublicLibrary() {
   }, [items, filter, query]);
 
   const empty =
-    !loading && !error && filteredFolders.length === 0 && filteredItems.length === 0;
+    !loading &&
+    !error &&
+    filteredFolders.length === 0 &&
+    filteredItems.length === 0;
+
+  const filters: { value: Filter; label: string }[] = [
+    { value: "ALL", label: "All" },
+    { value: "FOLDER", label: "Folders" },
+    { value: "FILE", label: "Files" },
+    { value: "LINK", label: "Links" },
+    { value: "CREDENTIAL", label: "Credentials" },
+  ];
 
   return (
-    <section className="fade-up space-y-5">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div>
-          <div className="mb-2 flex items-center gap-2">
-            <span className="badge badge-public">Public</span>
-            <span className="text-sm text-muted">No login required</span>
-          </div>
-          <h2 className="brand text-3xl md:text-4xl">Public library</h2>
-          <p className="mt-2 max-w-xl text-muted">
-            Anything marked public is listed here and open to anyone with the
-            link. Private vault items never appear.
-          </p>
-        </div>
-
-        <div className="flex w-full flex-col gap-2 md:w-[340px]">
-          <label className="label" htmlFor="public-search">
-            Search public content
-          </label>
-          <input
-            id="public-search"
-            className="field"
-            placeholder="Search files, links, folders…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
+    <section className="space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+        <input
+          className="field sm:max-w-xs"
+          placeholder="Search…"
+          aria-label="Search public content"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {(
-          [
-            ["ALL", "All"],
-            ["FOLDER", "Folders"],
-            ["FILE", "Files"],
-            ["LINK", "Links"],
-            ["CREDENTIAL", "Credentials"],
-          ] as const
-        ).map(([value, label]) => (
+      <div className="filter-bar">
+        {filters.map(({ value, label }) => (
           <button
             key={value}
             type="button"
-            className={`btn ${filter === value ? "btn-primary" : "btn-ghost"}`}
+            className={`btn btn-sm ${
+              filter === value ? "btn-primary" : "btn-ghost"
+            }`}
             onClick={() => setFilter(value)}
           >
             {label}
@@ -121,42 +109,39 @@ export function PublicLibrary() {
         ))}
       </div>
 
-      {loading ? <p className="text-muted">Loading public content…</p> : null}
-      {error ? (
-        <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-danger">
-          {error}
-        </p>
+      {loading ? (
+        <p className="text-sm text-muted">Loading…</p>
       ) : null}
+      {error ? <p className="alert-error">{error}</p> : null}
 
       {empty ? (
-        <div className="panel px-6 py-12 text-center">
-          <p className="brand text-2xl">Nothing public yet</p>
-          <p className="mx-auto mt-2 max-w-md text-muted">
-            Sign in to your vault, create an item, and set access to Public.
-            It will show up here for anyone.
+        <div className="card px-4 py-10 text-center">
+          <p className="font-medium text-ink">Nothing public yet</p>
+          <p className="mt-1 text-sm text-muted">
+            Sign in and set an item to public to list it here.
           </p>
-          <Link href="/login?next=/vault" className="btn btn-primary mt-5">
-            Go to vault
+          <Link href="/login?next=/vault" className="btn btn-primary btn-sm mt-4">
+            Sign in
           </Link>
         </div>
       ) : null}
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {filteredFolders.map((folder) => (
-          <article key={folder.id} className="item-row">
-            <div>
-              <div className="mb-2 flex flex-wrap gap-2">
-                <span className="badge badge-type">Folder</span>
-                <span className="badge badge-public">Public</span>
-              </div>
-              <h3 className="text-lg font-bold">{folder.name}</h3>
-              <p className="mt-1 text-sm text-muted">
-                {folder.itemCount} items · {folder.childCount} subfolders
+          <article key={folder.id} className="list-row">
+            <div className="min-w-0">
+              <TypeLabel type="FOLDER" />
+              <h3 className="mt-1 truncate font-semibold">{folder.name}</h3>
+              <p className="mt-0.5 text-sm text-muted">
+                {folder.itemCount} items
+                {folder.childCount > 0
+                  ? ` · ${folder.childCount} folders`
+                  : ""}
               </p>
             </div>
             {folder.shareToken ? (
               <Link
-                className="btn btn-primary"
+                className="btn btn-primary btn-sm shrink-0"
                 href={`/share/folder/${folder.shareToken}`}
               >
                 Open
@@ -166,30 +151,20 @@ export function PublicLibrary() {
         ))}
 
         {filteredItems.map((item) => (
-          <article key={item.id} className="item-row">
-            <div>
-              <div className="mb-2 flex flex-wrap gap-2">
-                <span className="badge badge-type">{item.type}</span>
-                <span className="badge badge-public">Public</span>
-              </div>
-              <h3 className="text-lg font-bold">{item.title}</h3>
-              <p className="mt-1 text-sm text-muted">
-                {item.folderName ? `${item.folderName} · ` : ""}
-                {item.type === "FILE" && item.fileName
-                  ? item.fileName
-                  : item.type === "LINK" && item.url
-                    ? item.url
-                    : item.type === "CREDENTIAL"
-                      ? "Shared credential"
-                      : "Shared item"}
+          <article key={item.id} className="list-row">
+            <div className="min-w-0">
+              <TypeLabel type={item.type} />
+              <h3 className="mt-1 truncate font-semibold">{item.title}</h3>
+              <p className="mt-0.5 truncate text-sm text-muted">
+                {subtitleForItem(item)}
               </p>
             </div>
             {item.shareToken ? (
               <Link
-                className="btn btn-primary"
+                className="btn btn-primary btn-sm shrink-0"
                 href={`/share/item/${item.shareToken}`}
               >
-                {item.type === "FILE" ? "View / download" : "Open"}
+                {item.type === "FILE" ? "View" : "Open"}
               </Link>
             ) : null}
           </article>
@@ -197,4 +172,15 @@ export function PublicLibrary() {
       </div>
     </section>
   );
+}
+
+function TypeLabel({ type }: { type: string }) {
+  return <span className="chip chip-neutral">{type}</span>;
+}
+
+function subtitleForItem(item: PublicItem) {
+  if (item.folderName) return item.folderName;
+  if (item.type === "FILE" && item.fileName) return item.fileName;
+  if (item.type === "LINK" && item.url) return item.url;
+  return item.type === "CREDENTIAL" ? "Credential" : "";
 }

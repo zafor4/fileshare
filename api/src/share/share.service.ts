@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ItemType, Visibility } from '@prisma/client';
-import { join } from 'path';
+import { resolve } from 'path';
 import { CryptoService } from '../crypto/crypto.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -124,7 +124,7 @@ export class ShareService {
     });
     if (!item?.filePath) throw new NotFoundException('Shared file not found');
     return {
-      path: join(this.uploadDir, item.filePath),
+      path: resolve(this.uploadDir, item.filePath),
       fileName: item.fileName ?? 'download',
       mimeType: item.mimeType ?? 'application/octet-stream',
     };

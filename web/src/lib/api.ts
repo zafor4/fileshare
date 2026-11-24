@@ -128,9 +128,14 @@ export const api = {
       }),
     remove: (id: string) =>
       request<{ ok: boolean }>(`/items/${id}`, { method: "DELETE" }),
-    downloadUrl: (id: string) => {
-      const t = token();
-      return `${API_URL}/items/${id}/download${t ? `?` : ""}`;
+    viewUrl: (id: string) => `${API_URL}/items/${id}/view`,
+    downloadUrl: (id: string) => `${API_URL}/items/${id}/download`,
+    async fetchBlob(id: string, mode: "view" | "download" = "view") {
+      const res = await fetch(`${API_URL}/items/${id}/${mode}`, {
+        headers: authHeaders(),
+      });
+      if (!res.ok) throw new Error(mode === "view" ? "Preview failed" : "Download failed");
+      return res.blob();
     },
   },
   share: {
@@ -168,6 +173,7 @@ export const api = {
       }>(`/share/folders/${token}`, {}, false),
     item: (token: string) =>
       request<{ kind: "item" } & Item>(`/share/items/${token}`, {}, false),
+    viewUrl: (token: string) => `${API_URL}/share/items/${token}/view`,
     downloadUrl: (token: string) => `${API_URL}/share/items/${token}/download`,
   },
 };

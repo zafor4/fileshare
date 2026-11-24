@@ -52,6 +52,21 @@ export class ItemsController {
     return this.items.get(req.user.id, id, reveal === '1' || reveal === 'true');
   }
 
+  @Get(':id/view')
+  async view(
+    @Req() req: AuthedRequest,
+    @Param('id') id: string,
+    @Res() res: Response,
+  ) {
+    const file = await this.items.getFilePath(req.user.id, id);
+    res.setHeader('Content-Type', file.mimeType);
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`,
+    );
+    return res.sendFile(file.path);
+  }
+
   @Get(':id/download')
   async download(
     @Req() req: AuthedRequest,

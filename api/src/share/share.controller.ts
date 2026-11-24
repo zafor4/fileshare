@@ -21,6 +21,17 @@ export class ShareController {
     return this.share.getItem(token);
   }
 
+  @Get('items/:token/view')
+  async view(@Param('token') token: string, @Res() res: Response) {
+    const file = await this.share.getFilePath(token);
+    res.setHeader('Content-Type', file.mimeType);
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`,
+    );
+    return res.sendFile(file.path);
+  }
+
   @Get('items/:token/download')
   async download(@Param('token') token: string, @Res() res: Response) {
     const file = await this.share.getFilePath(token);

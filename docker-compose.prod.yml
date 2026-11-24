@@ -1,0 +1,65 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fileshare-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fileshare}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-fileshare}
+    volumes:
+      - fileshare_pg:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-fileshare} -d ${POSTGRES_DB:-fileshare}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - portfolio_default
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: fileshare-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-fileshare}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-fileshare}?schema=public
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?Set ENCRYPTION_KEY in .env}
+      PORT: 4000
+      UPLOAD_DIR: /data/uploads
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://files.zaforiq.me}
+    volumes:
+      - fileshare_uploads:/data/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - portfolio_default
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://files.zaforiq.me/api}
+    container_name: fileshare-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    networks:
+      - portfolio_default
+
+networks:
+  portfolio_default:
+    external: true
+
+volumes:
+  fileshare_pg:
+  fileshare_uploads:

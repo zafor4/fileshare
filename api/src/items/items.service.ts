@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { ItemType, Visibility } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import { existsSync, mkdirSync, unlinkSync } from 'fs';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { CryptoService } from '../crypto/crypto.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -180,7 +180,7 @@ export class ItemsService {
       throw new NotFoundException('File not found');
     }
     return {
-      path: join(this.uploadDir, item.filePath),
+      path: resolve(this.uploadDir, item.filePath),
       fileName: item.fileName ?? 'download',
       mimeType: item.mimeType ?? 'application/octet-stream',
     };
